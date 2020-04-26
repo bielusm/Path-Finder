@@ -1,20 +1,12 @@
 # main event loop adapted from https://dr0id.bitbucket.io/legacy/pygame_tutorial00.html
 # Scale adapted from https://www.youtube.com/watch?v=alhpH6ECFvQ&t=1556s&ab_channel=TheCodingTrain
 
-from enum import Enum
 import queue
 import copy
 import pygame
-import thorpy
 
-
-class Locations(Enum):
-    EMPTY = 0
-    START = 1
-    END = 2
-    WALL = 3
-    DISCOVERED = 4
-
+from Graphics import Graphics
+from Grid import Grid
 
 SCALE = 10
 WIDTH = 64
@@ -25,10 +17,14 @@ MENU_BUFFER = 27
 START = (2, 28)
 END = (62, 32)
 
-GRID = []
+GridContainer = Grid.GridContainer(WIDTH, HEIGHT, START, END)
+
+Locations = Grid.Locations
 
 
 def get_edges(x, y):
+    GRID = GridContainer.GRID
+
     def check_and_add(i, j):
         if not GRID[i][j] == Locations.WALL:
             edges.put((i, j))
@@ -54,18 +50,19 @@ class Node:
         self.history = history
 
 
-def trace_path(v, screen):
+def trace_path(v, graphics):
     history = v.history
     for pos in history:
         x, y = pos
-        update_box(screen, x, y, Locations.END)
+        update_box(x, y, Locations.END, graphics)
 
 
 # for history calculation https://stackoverflow.com/a/48260217/12252592
-def breadth_first_search(screen):
+def breadth_first_search(graphics):
+    GRID = GridContainer.GRID
     q = queue.Queue()
     x, y = START
-    update_box(screen, x, y, Locations.DISCOVERED)
+    update_box(x, y, Locations.DISCOVERED, graphics)
     q.put(Node((x, y), []))
 
     while not q.empty():
@@ -73,7 +70,7 @@ def breadth_first_search(screen):
 
         x, y = v.pos
         if v.pos == END:
-            trace_path(v, screen)
+            trace_path(v, graphics)
             return v
         edges = get_edges(x, y)
         while not edges.empty():
@@ -83,87 +80,30 @@ def breadth_first_search(screen):
                 history = copy.deepcopy(v.history)
                 history.append(v.pos)
                 q.put(Node((i, j), history))
-                update_box(screen, i, j, Locations.DISCOVERED)
+                update_box(i, j, Locations.DISCOVERED, graphics)
 
 
-def init_grid():
-    global GRID
-    GRID = []
-    for i in range(WIDTH):
-        x = []
-        for j in range(HEIGHT):
-            if i == END[0] and j == END[1]:
-                x.append(Locations.END)
-            elif i == START[0] and j == START[1]:
-                x.append(Locations.START)
-            else:
-                x.append(Locations.EMPTY)
-        GRID.append(x)
-
-
-def draw_grid(screen):
-    for x in range(WIDTH):
-        for y in range(HEIGHT):
-            draw_box(screen, x, y, GRID[x][y])
+def update_box(x, y, val, graphics):
+    GridContainer.update_box(x,y,val)
+    graphics.draw_box(x, y, val)
     pygame.display.flip()
 
 
-def update_box(screen, x, y, val):
-    GRID[x][y] = val
-    draw_box(screen, x, y, val)
-    pygame.display.flip()
+def start(graphics):
+    breadth_first_search(graphics)
 
 
-def draw_box(screen, x, y, val):
-    if val == Locations.START:
-        color = (255, 0, 0)
-    elif val == Locations.END:
-        color = (0, 255, 0)
-    elif val == Locations.EMPTY:
-        color = (255, 255, 255)
-    elif val == Locations.WALL:
-        color = (0, 0, 0)
-    else:  # val == Locations.DISCOVERED:
-        color = (255, 255, 0)
-
-    pygame.draw.rect(screen, color, pygame.Rect(x * SCALE, MENU_BUFFER + y * SCALE, SCALE - 1, SCALE - 1))
-
-
-def create_menu(screen):
-    start_button = thorpy.make_button("Start", func=start, params={"screen": screen})
-    start_button.set_topleft((0, 0))
-    reset_button = thorpy.make_button("Reset", func=reset, params={"screen": screen})
-    reset_button.set_topleft((42, 0))
-    start_button.blit()
-    start_button.update()
-    reset_button.blit()
-    reset_button.update()
-    menu = thorpy.Menu([start_button, reset_button])
-    return menu
-
-
-def start(screen):
-    breadth_first_search(screen)
-
-
-def reset(screen):
-    init_grid()
-    draw_grid(screen)
+def reset(graphics):
+    GridContainer.init_grid()
+    graphics.draw_grid(GridContainer.GRID)
 
 
 def main():
-    pygame.init()
-    screen = pygame.display.set_mode([WIDTH * SCALE, MENU_BUFFER + HEIGHT * SCALE])
-    init_grid()
-    draw_grid(screen)
-
+    graphics = Graphics.Graphics(WIDTH, HEIGHT, SCALE, MENU_BUFFER, start, reset)
+    GridContainer.init_grid()
+    graphics.draw_grid(GridContainer.GRID)
     running = True
-
-    menu = create_menu(screen)
-
-    for element in menu.get_population():
-        element.surface = screen
-
+    # graphics.draw_grid(GRID)
     while running:
         # Event Loop
         for event in pygame.event.get():
@@ -181,9 +121,9 @@ def main():
                     pressed = 1 if event.button == 1 else None
 
                 if pressed:
-                    update_box(screen, x // SCALE, (y - MENU_BUFFER) // SCALE, Locations.WALL)
+                    update_box(x // SCALE, (y - MENU_BUFFER) // SCALE, Locations.WALL, graphics)
 
-            menu.react(event)
+        graphics.update(event)
 
 
 main()
