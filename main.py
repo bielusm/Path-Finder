@@ -7,6 +7,7 @@ import copy
 import pygame
 import thorpy
 
+
 class Locations(Enum):
     EMPTY = 0
     START = 1
@@ -15,9 +16,8 @@ class Locations(Enum):
     DISCOVERED = 4
 
 
-
 SCALE = 10
-WIDTH =64
+WIDTH = 64
 HEIGHT = 64
 
 MENU_BUFFER = 27
@@ -25,55 +25,57 @@ MENU_BUFFER = 27
 START = (2, 28)
 END = (62, 32)
 
-GRID = None
+GRID = []
 
 
 def get_edges(x, y):
-    def check_and_add(edges, x, y):
-        if not GRID[x][y] == Locations.WALL:
-            edges.put((x,y))
+    def check_and_add(i, j):
+        if not GRID[i][j] == Locations.WALL:
+            edges.put((i, j))
 
     edges = queue.Queue()
     if not x == 0:
-        check_and_add(edges, x-1, y)
-    if not x == WIDTH-1:
-        check_and_add(edges, x+1, y)
+        check_and_add(x - 1, y)
+    if not x == WIDTH - 1:
+        check_and_add(x + 1, y)
     if not y == 0:
-        check_and_add(edges, x, y-1)
-    if not y == HEIGHT-1:
-        check_and_add(edges, x, y+1)
+        check_and_add(x, y - 1)
+    if not y == HEIGHT - 1:
+        check_and_add(x, y + 1)
     return edges
 
 
 class Node:
     pos = None
     history = None
+
     def __init__(self, pos, history):
         self.pos = pos
         self.history = history
 
+
+def trace_path(v, screen):
+    history = v.history
+    for pos in history:
+        x, y = pos
+        update_box(screen, x, y, Locations.END)
+
+
 # for history calculation https://stackoverflow.com/a/48260217/12252592
 def breadth_first_search(screen):
-    def trace_path(v):
-        history = v.history
-        for pos in history:
-            x,y = pos
-            update_box(screen, x, y, Locations.END)
-
-
     q = queue.Queue()
-    x,y = START
-    update_box(screen, x,y, Locations.DISCOVERED)
-    q.put(Node((x,y), []))
+    x, y = START
+    update_box(screen, x, y, Locations.DISCOVERED)
+    q.put(Node((x, y), []))
 
     while not q.empty():
         v = q.get()
 
         x, y = v.pos
         if v.pos == END:
-            trace_path(v)
+            trace_path(v, screen)
             return v
-        edges = get_edges(x,y)
+        edges = get_edges(x, y)
         while not edges.empty():
             w = edges.get()
             i, j = w
@@ -82,7 +84,6 @@ def breadth_first_search(screen):
                 history.append(v.pos)
                 q.put(Node((i, j), history))
                 update_box(screen, i, j, Locations.DISCOVERED)
-
 
 
 def init_grid():
@@ -99,16 +100,19 @@ def init_grid():
                 x.append(Locations.EMPTY)
         GRID.append(x)
 
+
 def draw_grid(screen):
     for x in range(WIDTH):
         for y in range(HEIGHT):
             draw_box(screen, x, y, GRID[x][y])
     pygame.display.flip()
 
+
 def update_box(screen, x, y, val):
     GRID[x][y] = val
     draw_box(screen, x, y, val)
     pygame.display.flip()
+
 
 def draw_box(screen, x, y, val):
     if val == Locations.START:
@@ -119,33 +123,37 @@ def draw_box(screen, x, y, val):
         color = (255, 255, 255)
     elif val == Locations.WALL:
         color = (0, 0, 0)
-    elif val == Locations.DISCOVERED:
+    else:  # val == Locations.DISCOVERED:
         color = (255, 255, 0)
 
     pygame.draw.rect(screen, color, pygame.Rect(x * SCALE, MENU_BUFFER + y * SCALE, SCALE - 1, SCALE - 1))
 
+
 def create_menu(screen):
     start_button = thorpy.make_button("Start", func=start, params={"screen": screen})
-    start_button.set_topleft((0,0))
+    start_button.set_topleft((0, 0))
     reset_button = thorpy.make_button("Reset", func=reset, params={"screen": screen})
-    reset_button.set_topleft((42,0))
+    reset_button.set_topleft((42, 0))
     start_button.blit()
     start_button.update()
     reset_button.blit()
     reset_button.update()
-    menu = thorpy.Menu([start_button,reset_button])
+    menu = thorpy.Menu([start_button, reset_button])
     return menu
+
 
 def start(screen):
     breadth_first_search(screen)
+
 
 def reset(screen):
     init_grid()
     draw_grid(screen)
 
+
 def main():
     pygame.init()
-    screen = pygame.display.set_mode([WIDTH*SCALE, MENU_BUFFER + HEIGHT*SCALE])
+    screen = pygame.display.set_mode([WIDTH * SCALE, MENU_BUFFER + HEIGHT * SCALE])
     init_grid()
     draw_grid(screen)
 
@@ -153,12 +161,8 @@ def main():
 
     menu = create_menu(screen)
 
-
-
-
     for element in menu.get_population():
         element.surface = screen
-
 
     while running:
         # Event Loop
@@ -177,7 +181,9 @@ def main():
                     pressed = 1 if event.button == 1 else None
 
                 if pressed:
-                    update_box(screen, x//SCALE, (y-MENU_BUFFER)//SCALE, Locations.WALL)
+                    update_box(screen, x // SCALE, (y - MENU_BUFFER) // SCALE, Locations.WALL)
 
-        menu.react(event)
+            menu.react(event)
+
+
 main()
