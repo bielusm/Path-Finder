@@ -8,8 +8,7 @@ from Graphics import Graphics
 from Grid import Grid
 from Grid import Locations
 from Algorithms import BFS
-from Util import Update
-update_box = Update.update_box
+from Util.Update import update_box
 
 SCALE = 10
 WIDTH = 64
@@ -26,12 +25,13 @@ GridContainer = Grid.GridContainer(WIDTH, HEIGHT, START, END)
 Locations = Locations.Locations
 
 
-def start(graphics):
+def start(graphics, alg):
+    reset(graphics)
     BFS.BFS.solve(GridContainer, graphics, START, END, WIDTH, HEIGHT)
 
 
 def reset(graphics):
-    GridContainer.init_grid()
+    GridContainer.reset_grid()
     graphics.draw_grid(GridContainer.GRID)
 
 
@@ -48,14 +48,15 @@ def main():
     # create the top menu bar
     menubar = Menu(root)
     root['menu'] = menubar
+    alg = IntVar()
+
     menubar.add_command(label='Start',
-                        command=lambda: start(graphics))
+                        command=lambda: start(graphics, alg))
     menubar.add_command(label='Reset',
                         command=lambda: reset(graphics))
     alg_menu = Menu(menubar)
-    alg = IntVar(0)
-    alg_menu.add_radiobutton(label='BFS', variable='alg', value='0')
-    alg_menu.add_radiobutton(label='A*', variable='alg', value='1')
+    alg_menu.add_radiobutton(label='BFS', variable=alg, value='0')
+    alg_menu.add_radiobutton(label='A*', variable=alg, value='1')
     menubar.add_cascade(label="Alg", menu=alg_menu)
 
     # will not display without being packed
@@ -71,17 +72,22 @@ def main():
             e_type = event.type
             if e_type == pygame.MOUSEBUTTONDOWN or e_type == pygame.MOUSEBUTTONUP or e_type == pygame.MOUSEMOTION:
                 x, y = event.pos
-                pressed = None
+                lclick = None
+                rclick = None
                 if e_type == pygame.MOUSEMOTION:
-                    pressed = event.buttons[0]
+                    lclick = event.buttons[0]
+                    rclick = event.buttons[2]
                 elif e_type == pygame.MOUSEBUTTONUP:
-                    pressed = 0 if event.button == 1 else None
+                    lclick = 0 if event.button == 1 else None
+                    rclick = 0 if event.button == 3 else None
                 elif e_type == pygame.MOUSEBUTTONDOWN:
-                    pressed = 1 if event.button == 1 else None
+                    lclick = 1 if event.button == 1 else None
+                    rclick = 1 if event.button == 3 else None
 
-                if pressed:
+                if lclick:
                     update_box(x // SCALE, y // SCALE, Locations.WALL, graphics, GridContainer)
-
+                if rclick:
+                    update_box(x // SCALE, y // SCALE, Locations.EMPTY, graphics, GridContainer)
         # Since WM_DESTROY_WINDOW is called async it could lead to an error without the check
         if RUNNING:
             root.update()

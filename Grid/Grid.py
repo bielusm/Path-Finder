@@ -15,6 +15,16 @@ class GridContainer:
         self.__END = end
         self.init_grid()
 
+    def reset_grid(self):
+        for i in range(self.__WIDTH):
+            for j in range(self.__HEIGHT):
+                if i == self.__END[0] and j == self.__END[1]:
+                    self.GRID[i][j] = Locations.END
+                elif i == self.__START[0] and j == self.__START[1]:
+                    self.GRID[i][j] = Locations.START
+                elif not self.GRID[i][j] == Locations.WALL:
+                    self.GRID[i][j] = Locations.EMPTY
+
     def init_grid(self):
         self.GRID = []
         for i in range(self.__WIDTH):
