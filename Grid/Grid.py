@@ -1,12 +1,4 @@
-from enum import Enum
-
-
-class Locations(Enum):
-    EMPTY = 0
-    START = 1
-    END = 2
-    WALL = 3
-    DISCOVERED = 4
+from Grid.Locations import Locations
 
 
 class GridContainer:
@@ -38,5 +30,3 @@ class GridContainer:
 
     def update_box(self, x, y, val):
         self.GRID[x][y] = val
-
-

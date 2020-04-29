@@ -1,96 +1,33 @@
 # main event loop adapted from https://dr0id.bitbucket.io/legacy/pygame_tutorial00.html
-# Scale adapted from https://www.youtube.com/watch?v=alhpH6ECFvQ&t=1556s&ab_channel=TheCodingTrain
 
-import queue
-import copy
 import pygame
-
+from tkinter import *
+from tkinter import ttk
+import os
 from Graphics import Graphics
 from Grid import Grid
+from Grid import Locations
+from Algorithms import BFS
+from Util import Update
+update_box = Update.update_box
 
 SCALE = 10
 WIDTH = 64
 HEIGHT = 64
 
-MENU_BUFFER = 27
 
 START = (2, 28)
 END = (62, 32)
 
+RUNNING = True
+
 GridContainer = Grid.GridContainer(WIDTH, HEIGHT, START, END)
 
-Locations = Grid.Locations
-
-
-def get_edges(x, y):
-    GRID = GridContainer.GRID
-
-    def check_and_add(i, j):
-        if not GRID[i][j] == Locations.WALL:
-            edges.put((i, j))
-
-    edges = queue.Queue()
-    if not x == 0:
-        check_and_add(x - 1, y)
-    if not x == WIDTH - 1:
-        check_and_add(x + 1, y)
-    if not y == 0:
-        check_and_add(x, y - 1)
-    if not y == HEIGHT - 1:
-        check_and_add(x, y + 1)
-    return edges
-
-
-class Node:
-    pos = None
-    history = None
-
-    def __init__(self, pos, history):
-        self.pos = pos
-        self.history = history
-
-
-def trace_path(v, graphics):
-    history = v.history
-    for pos in history:
-        x, y = pos
-        update_box(x, y, Locations.END, graphics)
-
-
-# for history calculation https://stackoverflow.com/a/48260217/12252592
-def breadth_first_search(graphics):
-    GRID = GridContainer.GRID
-    q = queue.Queue()
-    x, y = START
-    update_box(x, y, Locations.DISCOVERED, graphics)
-    q.put(Node((x, y), []))
-
-    while not q.empty():
-        v = q.get()
-
-        x, y = v.pos
-        if v.pos == END:
-            trace_path(v, graphics)
-            return v
-        edges = get_edges(x, y)
-        while not edges.empty():
-            w = edges.get()
-            i, j = w
-            if not GRID[i][j] == Locations.DISCOVERED:
-                history = copy.deepcopy(v.history)
-                history.append(v.pos)
-                q.put(Node((i, j), history))
-                update_box(i, j, Locations.DISCOVERED, graphics)
-
-
-def update_box(x, y, val, graphics):
-    GridContainer.update_box(x,y,val)
-    graphics.draw_box(x, y, val)
-    pygame.display.flip()
+Locations = Locations.Locations
 
 
 def start(graphics):
-    breadth_first_search(graphics)
+    BFS.BFS.solve(GridContainer, graphics, START, END, WIDTH, HEIGHT)
 
 
 def reset(graphics):
@@ -99,18 +36,40 @@ def reset(graphics):
 
 
 def main():
-    graphics = Graphics.Graphics(WIDTH, HEIGHT, SCALE, MENU_BUFFER, start, reset)
+    root = Tk()
+    # gets rid of dashed line menu
+    root.option_add('*tearOff', FALSE)
+
+    root.title('Path finder')
+    frame = ttk.Frame(root, width=WIDTH*SCALE, height=HEIGHT*SCALE)
+    # This sets the windowID for pygame to use our window
+    os.environ['SDL_WINDOWID'] = str(frame.winfo_id())
+    graphics = Graphics.Graphics(WIDTH, HEIGHT, SCALE)
+    # create the top menu bar
+    menubar = Menu(root)
+    root['menu'] = menubar
+    menubar.add_command(label='Start',
+                        command=lambda: start(graphics))
+    menubar.add_command(label='Reset',
+                        command=lambda: reset(graphics))
+    alg_menu = Menu(menubar)
+    alg = IntVar(0)
+    alg_menu.add_radiobutton(label='BFS', variable='alg', value='0')
+    alg_menu.add_radiobutton(label='A*', variable='alg', value='1')
+    menubar.add_cascade(label="Alg", menu=alg_menu)
+
+    # will not display without being packed
+    frame.pack()
+
     GridContainer.init_grid()
     graphics.draw_grid(GridContainer.GRID)
-    running = True
     # graphics.draw_grid(GRID)
-    while running:
+    root.protocol("WM_DELETE_WINDOW", lambda: destroy(root))
+    while RUNNING:
         # Event Loop
         for event in pygame.event.get():
             e_type = event.type
-            if e_type == pygame.QUIT:
-                running = False
-            elif e_type == pygame.MOUSEBUTTONDOWN or e_type == pygame.MOUSEBUTTONUP or e_type == pygame.MOUSEMOTION:
+            if e_type == pygame.MOUSEBUTTONDOWN or e_type == pygame.MOUSEBUTTONUP or e_type == pygame.MOUSEMOTION:
                 x, y = event.pos
                 pressed = None
                 if e_type == pygame.MOUSEMOTION:
@@ -121,9 +80,17 @@ def main():
                     pressed = 1 if event.button == 1 else None
 
                 if pressed:
-                    update_box(x // SCALE, (y - MENU_BUFFER) // SCALE, Locations.WALL, graphics)
+                    update_box(x // SCALE, y // SCALE, Locations.WALL, graphics, GridContainer)
 
-        graphics.update(event)
+        # Since WM_DESTROY_WINDOW is called async it could lead to an error without the check
+        if RUNNING:
+            root.update()
+
+
+def destroy(root):
+    global RUNNING
+    RUNNING = False
+    root.destroy()
 
 
 main()
