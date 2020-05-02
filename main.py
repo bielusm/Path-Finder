@@ -7,16 +7,17 @@ import os
 from Graphics import Graphics
 from Grid import Grid
 from Grid import Locations
-from Algorithms import BFS
+from Algorithms.BFS import BFS
+from Algorithms.DFS import DFS
 from Util.Update import update_box
 
 SCALE = 10
-WIDTH = 64
-HEIGHT = 64
+WIDTH = 50
+HEIGHT = 50
 
 
-START = (2, 28)
-END = (62, 32)
+START = (0, 1)
+END = (19, 15)
 
 RUNNING = True
 
@@ -24,10 +25,12 @@ GridContainer = Grid.GridContainer(WIDTH, HEIGHT, START, END)
 
 Locations = Locations.Locations
 
+algs = [BFS, DFS]
+
 
 def start(graphics, alg):
     reset(graphics)
-    BFS.BFS.solve(GridContainer, graphics, START, END, WIDTH, HEIGHT)
+    algs[alg.get()].solve(GridContainer, graphics, START, END, WIDTH, HEIGHT)
 
 
 def reset(graphics):
@@ -56,7 +59,7 @@ def main():
                         command=lambda: reset(graphics))
     alg_menu = Menu(menubar)
     alg_menu.add_radiobutton(label='BFS', variable=alg, value='0')
-    alg_menu.add_radiobutton(label='A*', variable=alg, value='1')
+    alg_menu.add_radiobutton(label='DFS', variable=alg, value='1')
     menubar.add_cascade(label="Alg", menu=alg_menu)
 
     # will not display without being packed
