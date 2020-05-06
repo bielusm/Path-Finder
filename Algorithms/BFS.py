@@ -45,5 +45,4 @@ class BFS(Algorithm):
                         self._grid.update_box(i, j, Locations.DISCOVERED)
             return True
         elif self._state == State.TRACING:
-            self.trace_path()
-            return True
+            return self.trace_path()

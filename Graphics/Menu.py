@@ -55,10 +55,15 @@ class Menu:
         self._buttons = []
         button = Button((0, 0), 'Start', self.start_running)
         self._buttons.append(button)
+        button = Button((0, 40), 'Reset', self.reset)
+        self._buttons.append(button)
         button = RadioButton((100, 0), 'BFS', self.change_alg, 0)
         self._buttons.append(button)
         button = RadioButton((100, 40), 'DFS', self.change_alg, 1)
         self._buttons.append(button)
+
+    def reset(self):
+        self.state.reset = True
 
     def start_running(self):
         self.state.running = True

@@ -14,6 +14,7 @@ Locations = Locations.Locations
 class State:
     running = False
     alg = 0
+    reset = False
 
 
 class World:
@@ -60,7 +61,10 @@ class World:
         return True
 
     def update(self):
-        if self._state.running:
+        if self._state.reset:
+            self._state.reset = False
+            self._grid.reset()
+        elif self._state.running:
             if algs[self._state.alg]:
                 self._state.running = algs[self._state.alg].step()
 

@@ -28,10 +28,11 @@ class Algorithm(ABC):
         self.grid.update_box(x, y, Locations.END)
 
         if self._parent == self.grid.start:
-            self._state = State.SOLVED
-            return
+            self._state = State.RESET
+            return False
 
         self._parent = self._parent_map[self._parent]
+        return True
 
     def get_edges(self, x, y):
         def check_and_add(i, j):

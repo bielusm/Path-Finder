@@ -24,8 +24,7 @@ class DFS(Algorithm):
             self.reset()
             return True
         elif self._state == State.TRACING:
-            self.trace_path()
-            return True
+            return self.trace_path()
         elif self._state == State.SOLVING:
             if not self._s.empty():
                 v = self._s.get()

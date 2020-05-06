@@ -28,12 +28,15 @@ class Grid:
     def reset(self):
         for i in range(self.width):
             for j in range(self.height):
+                self._grid[i][j].changed = True
                 if i == self.end[0] and j == self.end[1]:
                     self._grid[i][j].val = Locations.END
                 elif i == self.start[0] and j == self.start[1]:
                     self._grid[i][j].val = Locations.START
                 elif not self._grid[i][j].val == Locations.WALL:
                     self._grid[i][j].val = Locations.EMPTY
+                else:
+                    self._grid[i][j].changed = False
 
     def init_grid(self):
         self._grid = []
