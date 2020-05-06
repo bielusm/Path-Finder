@@ -1,35 +1,46 @@
-from Algorithms.Algorithm import Algorithm
+from Algorithms.Algorithm import Algorithm, State
 from Grid.Locations import Locations
-from Util.Update import update_box
-from Algorithms.Util import trace_path, get_edges
 import queue
-import time
 
 # Parent Map from
 # https://stackoverflow.com/a/12864196
 
 
 class DFS(Algorithm):
-    @staticmethod
-    def solve(grid_container, graphics, start, end, width, height):
-        parent_map = {}
-        g = grid_container.GRID
-        # Stack
-        s = queue.LifoQueue()
-        s.put(start)
-        while not s.empty():
-            time.sleep(0.003)
-            v = s.get()
-            x, y = v
-            if g[x][y] == Locations.END:
-                trace_path(parent_map, graphics, grid_container, start, end)
-                return
-            if g[x][y] != Locations.DISCOVERED:
-                update_box(x, y, Locations.DISCOVERED, graphics, grid_container)
-                edges = get_edges(x, y, g, width, height)
-                while not edges.empty():
-                    w = edges.get()
-                    i, j = w
-                    if g[i][j] != Locations.DISCOVERED:
-                        s.put(w)
-                        parent_map[w] = v
+    def __init__(self, grid):
+        super().__init__(grid)
+        self._s = queue.LifoQueue()
+        self._s.put(self.grid.start)
+
+    def reset(self):
+        super().reset()
+        self.grid.reset()
+        self._s = queue.LifoQueue()
+        self._s.put(self.grid.start)
+        self._state = State.SOLVING
+
+    def step(self):
+        if self._state == State.RESET:
+            self.reset()
+            return True
+        elif self._state == State.TRACING:
+            self.trace_path()
+            return True
+        elif self._state == State.SOLVING:
+            if not self._s.empty():
+                v = self._s.get()
+                x, y = v
+                if self.grid.get_val(x, y) == Locations.END:
+                    self._parent = self.grid.end
+                    self._state = State.TRACING
+                    return True
+                if self.grid.get_val(x, y) != Locations.DISCOVERED:
+                    self.grid.update_box(x, y, Locations.DISCOVERED)
+                    edges = self.get_edges(x, y)
+                    while not edges.empty():
+                        w = edges.get()
+                        i, j = w
+                        if self.grid.get_val(i, j) != Locations.DISCOVERED:
+                            self._s.put(w)
+                            self._parent_map[w] = v
+            return True
