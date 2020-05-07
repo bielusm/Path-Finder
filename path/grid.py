@@ -1,9 +1,16 @@
-'''Holds a grid of cells that represent the maze'''
-from grid.locations import Locations
+'''The main grid module'''
+from enum import Enum
 
+class Locations(Enum):
+    '''Each state a cell can be in'''
+    EMPTY = 0
+    START = 1
+    END = 2
+    WALL = 3
+    DISCOVERED = 4
 
 class Grid:
-    '''The main grid'''
+    '''Holds a grid of cells that represent the maze'''
     class Cell:
         '''Each cell of the grid'''
         def __init__(self, val):

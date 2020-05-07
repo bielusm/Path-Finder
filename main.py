@@ -1,5 +1,5 @@
 '''The start of the program'''
-from game_logic.world import World
+from path.world import World
 
 SCALE = 10
 WIDTH = 50

@@ -1,13 +1,10 @@
 '''Module containing the render update and event code'''
 import pygame
 
-from graphics.graphics import Graphics
-from graphics.menu import Menu
-from grid.grid import Grid
-from grid.locations import Locations
-from algorithms.bfs import BFS
-from algorithms.dfs import DFS
-
+from path.graphics import Graphics
+from path.menu import Menu
+from path.grid import Grid, Locations
+from path.algorithm import BFS, DFS
 
 class World:
     '''A class representing the current state of the world'''
