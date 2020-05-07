@@ -55,15 +55,21 @@ class Menu:
         self._menu = pygame.Surface((self.width, self.height))
         self._menu.set_alpha(50)
         self._menu.fill(pygame.Color(255, 0, 255))
-        self._buttons = []
+        self._buttons = self.add_buttons()
+
+
+    def add_buttons(self):
+        '''Creates and returns a list of all the buttons in the menu'''
+        buttons = []
         button = Button((0, 0), 'Start', self.start_running)
-        self._buttons.append(button)
+        buttons.append(button)
         button = Button((0, 40), 'Reset', self.reset)
-        self._buttons.append(button)
+        buttons.append(button)
         button = RadioButton((100, 0), 'BFS', self.change_alg, 0)
-        self._buttons.append(button)
+        buttons.append(button)
         button = RadioButton((100, 40), 'DFS', self.change_alg, 1)
-        self._buttons.append(button)
+        buttons.append(button)
+        return buttons
 
     def reset(self):
         '''Sets the reset state to true'''
