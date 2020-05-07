@@ -21,7 +21,6 @@ class Button:
 
     def click(self, x, y):
         '''Checks if the user has clicked the button and calls a function if so'''
-        print(self._surface.get_rect())
         if self._surface.get_rect().collidepoint(x - self._pos[0], y - self._pos[1]):
             self._function()
             return True
@@ -42,7 +41,6 @@ class RadioButton(Button):
 
     def click(self, x, y):
         if self._surface.get_rect().collidepoint(x - self._pos[0], y - self._pos[1]):
-            print("click radiobutton")
             self._function(self._val)
 
 
