@@ -50,9 +50,9 @@ class Menu:
         self.state = state
         self.width, self.height = size
         self._pos = pos
-        self._menu = pygame.Surface((self.width, self.height))
-        self._menu.set_alpha(50)
-        self._menu.fill(pygame.Color(255, 0, 255))
+        self.menu = pygame.Surface((self.width, self.height))
+        self.menu.set_alpha(50)
+        self.menu.fill(pygame.Color(255, 0, 255))
         self._buttons = self.add_buttons()
 
 
@@ -94,6 +94,6 @@ class Menu:
 
     def draw(self, graphics):
         '''Draws the menu'''
-        graphics.draw_surface(self._menu, self._pos)
+        graphics.draw_surface(self.menu, self._pos)    
         for button in self._buttons:
             button.draw(graphics, self._pos)

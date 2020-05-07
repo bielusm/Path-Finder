@@ -69,7 +69,7 @@ class Grid:
         '''Changes the value of a grid cell at an x, y coordinate'''
         self._grid[x][y].set_val(val)
 
-    def draw(self, graphics):
+    def draw(self, graphics, menu_rect):
         '''Draws each cell in the grid'''
         def draw_box(x, y, val, graphics):
             if val == Locations.START:
@@ -87,6 +87,6 @@ class Grid:
         for x in range(self.width):
             for y in range(self.height):
                 curr = self._grid[x][y]
-                if curr.changed:
+                if curr.changed or menu_rect.collidepoint(x, y):
                     draw_box(x, y, curr.val, graphics)
                     curr.changed = False

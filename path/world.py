@@ -21,7 +21,6 @@ class World:
         self._menu = Menu((400, 200), (width*scale-400,
                                        height*scale-200), self._state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
-
     def handle_events(self):
         '''Handles windows and pygame events'''
         for event in pygame.event.get():
@@ -65,6 +64,6 @@ class World:
 
     def draw(self):
         '''Draws everything in the world'''
-        self._grid.draw(self._graphics)
+        self._grid.draw(self._graphics, self._menu.menu.get_rect())
         self._menu.draw(self._graphics)
         pygame.display.flip()
