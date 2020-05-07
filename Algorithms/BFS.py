@@ -1,9 +1,11 @@
+'''Breath first search algorithm'''
 import queue
-from Algorithms.Algorithm import Algorithm, State
-from Grid.Locations import Locations
+from algorithms.algorithm import Algorithm, State
+from grid.locations import Locations
 
 
 class BFS(Algorithm):
+    '''BFS class'''
     def __init__(self, grid):
         super().__init__(grid)
         self._q = queue.Queue()
@@ -29,20 +31,21 @@ class BFS(Algorithm):
             return True
         elif self._state == State.SOLVING:
             if not self._q.empty():
-                v = self._q.get()
-                x, y = v
-                if v == self._grid.end:
+                vertex = self._q.get()
+                x, y = vertex
+                if vertex == self._grid.end:
                     self._state = State.TRACING
                     self._parent = self._grid.end
                     return True
                 edges = self.get_edges(x, y)
                 while not edges.empty():
-                    w = edges.get()
-                    i, j = w
+                    neighbor = edges.get()
+                    i, j = neighbor
                     if not self._grid.get_val(i, j) == Locations.DISCOVERED:
-                        self._parent_map[w] = v
-                        self._q.put(w)
+                        self._parent_map[neighbor] = vertex
+                        self._q.put(neighbor)
                         self._grid.update_box(i, j, Locations.DISCOVERED)
             return True
-        elif self._state == State.TRACING:
+        else:
+            # self._state == State.TRACING:
             return self.trace_path()

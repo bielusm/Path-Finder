@@ -1,42 +1,39 @@
+'''Module containing the render update and event code'''
 import pygame
-from Graphics import Graphics
-from Grid.Grid import Grid
-from Grid import Locations
-from Graphics.Menu import Menu
-from Algorithms.BFS import BFS
-from Algorithms.DFS import DFS
 
-algs = []
-
-Locations = Locations.Locations
-
-
-class State:
-    running = False
-    alg = 0
-    reset = False
+from graphics.graphics import Graphics
+from graphics.menu import Menu
+from grid.grid import Grid
+from grid.locations import Locations
+from algorithms.bfs import BFS
+from algorithms.dfs import DFS
 
 
 class World:
+    '''A class representing the current state of the world'''
     def __init__(self, width, height, scale):
-        self._state = State()
+        self._state = dict(
+            running=False,
+            alg=0,
+            reset=False)
         self._width = width
         self._height = height
         self._scale = scale
         self._grid = Grid(width, height)
-        self._graphics = Graphics.Graphics(width, height, scale)
+        self._graphics = Graphics(width, height, scale)
         self._menu = Menu((400, 200), (width*scale-400,
                                        height*scale-200), self._state)
-        self._alg = 0
-        global algs
-        algs = [BFS(self._grid), DFS(self._grid)]
+        self._algs = [BFS(self._grid), DFS(self._grid)]
 
     def handle_events(self):
+        '''Handles windows and pygame events'''
         for event in pygame.event.get():
             e_type = event.type
             if e_type == pygame.QUIT:
                 return False
-            if e_type == pygame.MOUSEBUTTONDOWN or e_type == pygame.MOUSEBUTTONUP or e_type == pygame.MOUSEMOTION:
+            if (e_type == pygame.MOUSEBUTTONDOWN
+                    or e_type == pygame.MOUSEBUTTONUP
+                    or e_type == pygame.MOUSEMOTION):
                 x, y = event.pos
                 lclick = None
                 rclick = None
@@ -61,14 +58,16 @@ class World:
         return True
 
     def update(self):
-        if self._state.reset:
-            self._state.reset = False
+        '''Updates the current state of the world'''
+        if self._state["reset"]:
+            self._state["reset"] = False
             self._grid.reset()
-        elif self._state.running:
-            if algs[self._state.alg]:
-                self._state.running = algs[self._state.alg].step()
+        elif self._state["running"]:
+            if self._algs[self._state["alg"]]:
+                self._state["running"] = self._algs[self._state["alg"]].step()
 
     def draw(self):
+        '''Draws everything in the world'''
         self._grid.draw(self._graphics)
         self._menu.draw(self._graphics)
         pygame.display.flip()

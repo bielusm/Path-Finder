@@ -1,10 +1,8 @@
-from pygame import *
+'''All of the drawing classes'''
 import pygame
-from Grid.Locations import Locations
-from Graphics.Menu import Menu
-
 
 class Graphics:
+    '''Various methods for drawing things on screen'''
     def __init__(self, width, height, scale):
         self._width = width
         self._height = height
@@ -13,6 +11,7 @@ class Graphics:
         self._screen = pygame.display.set_mode([width * scale, height * scale])
 
     def draw_cell(self, x, y, color):
+        '''Draws a grid cell in a specified location with a specified color'''
         pygame.draw.rect(
             self._screen,
             color,
@@ -22,6 +21,5 @@ class Graphics:
                         self._scale - 1))
 
     def draw_surface(self, surface, pos):
+        '''Draws a pygame surface on the main screen'''
         self._screen.blit(surface, pos)
-
-

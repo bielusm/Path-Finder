@@ -1,12 +1,14 @@
-from Algorithms.Algorithm import Algorithm, State
-from Grid.Locations import Locations
+'''Module for Depth First Search Algorithm'''
 import queue
+from algorithms.algorithm import Algorithm, State
+from grid.locations import Locations
 
 # Parent Map from
 # https://stackoverflow.com/a/12864196
 
 
 class DFS(Algorithm):
+    '''DFS Class'''
     def __init__(self, grid):
         super().__init__(grid)
         self._s = queue.LifoQueue()
@@ -25,10 +27,11 @@ class DFS(Algorithm):
             return True
         elif self._state == State.TRACING:
             return self.trace_path()
-        elif self._state == State.SOLVING:
+        else:
+            # self._state == State.SOLVING:
             if not self._s.empty():
-                v = self._s.get()
-                x, y = v
+                vertex = self._s.get()
+                x, y = vertex
                 if self.grid.get_val(x, y) == Locations.END:
                     self._parent = self.grid.end
                     self._state = State.TRACING
@@ -37,9 +40,9 @@ class DFS(Algorithm):
                     self.grid.update_box(x, y, Locations.DISCOVERED)
                     edges = self.get_edges(x, y)
                     while not edges.empty():
-                        w = edges.get()
-                        i, j = w
+                        edge = edges.get()
+                        i, j = edge
                         if self.grid.get_val(i, j) != Locations.DISCOVERED:
-                            self._s.put(w)
-                            self._parent_map[w] = v
+                            self._s.put(edge)
+                            self._parent_map[edge] = vertex
             return True

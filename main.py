@@ -1,4 +1,5 @@
-from GameLogic.World import World
+'''The start of the program'''
+from game_logic.world import World
 
 SCALE = 10
 WIDTH = 50
@@ -6,6 +7,7 @@ HEIGHT = 50
 
 
 def main():
+    '''The main loop for the program'''
     world = World(WIDTH, HEIGHT, SCALE)
     while True:
         if not world.handle_events():
