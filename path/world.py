@@ -18,8 +18,7 @@ class World:
         self._scale = scale
         self._grid = Grid(width, height)
         self._graphics = Graphics(width, height, scale)
-        self._menu = Menu((400, 200), (width*scale-400,
-                                       height*scale-200), self._state)
+        self._menu = Menu((width*scale, height*scale), self._state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
     def handle_events(self):
         '''Handles windows and pygame events'''
@@ -64,6 +63,20 @@ class World:
 
     def draw(self):
         '''Draws everything in the world'''
-        self._grid.draw(self._graphics, self._menu.menu.get_rect())
+
+        menu_rect = self.calc_menu_rect()
+        self._grid.draw(self._graphics, menu_rect)
         self._menu.draw(self._graphics)
         pygame.display.flip()
+
+    def calc_menu_rect(self):
+        '''
+        Scales the menu down to grid coordinates
+        and rects a rect representing where it is
+        '''
+        rect = self._menu.menu.get_rect()
+        rect.x = self._menu.pos[0]/self._scale
+        rect.y = self._menu.pos[1]/self._scale
+        rect.width = rect.width / self._scale
+        rect.height = rect.height / self._scale
+        return rect

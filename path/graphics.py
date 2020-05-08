@@ -1,5 +1,6 @@
 '''All of the drawing classes'''
 import pygame
+from pygame import DOUBLEBUF
 
 class Graphics:
     '''Various methods for drawing things on screen'''
@@ -8,7 +9,9 @@ class Graphics:
         self._height = height
         self._scale = scale
         pygame.init()
-        self._screen = pygame.display.set_mode([width * scale, height * scale])
+        self._screen = pygame.display.set_mode([width * scale, height * scale], DOUBLEBUF)
+        # For speed
+        self._screen.set_alpha(None)
 
     def draw_cell(self, x, y, color):
         '''Draws a grid cell in a specified location with a specified color'''

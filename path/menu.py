@@ -8,7 +8,7 @@ class Button:
     _padding = 10
 
     def __init__(self, pos, text, function):
-        self._pos = pos
+        self.pos = pos
         self._function = function
         self._default_font = pygame.font.Font(
             pygame.font.get_default_font(), 20)
@@ -21,14 +21,14 @@ class Button:
 
     def click(self, x, y):
         '''Checks if the user has clicked the button and calls a function if so'''
-        if self._surface.get_rect().collidepoint(x - self._pos[0], y - self._pos[1]):
+        if self._surface.get_rect().collidepoint(x - self.pos[0], y - self.pos[1]):
             self._function()
             return True
         return False
 
     def draw(self, graphics, offset):
         '''Draws the button'''
-        x, y = self._pos
+        x, y = self.pos
         x_offset, y_offset = offset
         graphics.draw_surface(self._surface, (x + x_offset, y + y_offset))
 
@@ -40,18 +40,18 @@ class RadioButton(Button):
         self._val = val
 
     def click(self, x, y):
-        if self._surface.get_rect().collidepoint(x - self._pos[0], y - self._pos[1]):
+        if self._surface.get_rect().collidepoint(x - self.pos[0], y - self.pos[1]):
             self._function(self._val)
 
 
 class Menu:
     '''The menu UI'''
-    def __init__(self, size, pos, state):
+    def __init__(self, screen_size, state):
         self.state = state
-        self.width, self.height = size
-        self._pos = pos
+        self.width, self.height = (200, 200)
+        self.pos = (screen_size[0]-self.width, screen_size[1]-self.width)
         self.menu = pygame.Surface((self.width, self.height))
-        self.menu.set_alpha(50)
+        self.menu.set_alpha(100)
         self.menu.fill(pygame.Color(255, 0, 255))
         self._buttons = self.add_buttons()
 
@@ -86,7 +86,7 @@ class Menu:
         Checks all buttons in the menu and
         calls their click method to see if they were clicked
         '''
-        offset_x, offset_y = self._pos
+        offset_x, offset_y = self.pos
         for button in self._buttons:
             if button.click(x - offset_x, y - offset_y):
                 return True
@@ -94,6 +94,6 @@ class Menu:
 
     def draw(self, graphics):
         '''Draws the menu'''
-        graphics.draw_surface(self.menu, self._pos)    
+        graphics.draw_surface(self.menu, self.pos)    
         for button in self._buttons:
-            button.draw(graphics, self._pos)
+            button.draw(graphics, self.pos)
