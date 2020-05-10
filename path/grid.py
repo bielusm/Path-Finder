@@ -116,6 +116,6 @@ class Grid:
         for x in range(self.width):
             for y in range(self.height):
                 curr = self._grid[x][y]
-                if curr.changed or menu_rect.collidepoint(x, y):
+                if curr.changed and not menu_rect.collidepoint(x, y):
                     draw_box(x, y, curr.val, graphics)
                     curr.changed = False
