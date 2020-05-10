@@ -64,7 +64,6 @@ class World:
 
     def draw(self):
         '''Draws everything in the world'''
-
         menu_rect = self.calc_menu_rect()
         self._grid.draw(self._graphics, menu_rect)
         self._menu.draw(self._graphics)
