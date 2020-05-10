@@ -12,7 +12,8 @@ class World:
         self._state = dict(
             running=False,
             alg=0,
-            reset=False)
+            reset=False,
+            current_tile=Locations.WALL)
         self._width = width
         self._height = height
         self._scale = scale
@@ -46,7 +47,7 @@ class World:
                     if not self._menu.button_click(x, y):
                         if lclick:
                             self._grid.update_box(
-                                x // self._scale, y // self._scale, Locations.WALL)
+                                x // self._scale, y // self._scale, self._state["current_tile"])
                         if rclick:
                             self._grid.update_box(
                                 x // self._scale, y // self._scale, Locations.EMPTY)

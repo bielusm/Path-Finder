@@ -8,6 +8,7 @@ class Locations(Enum):
     END = 2
     WALL = 3
     DISCOVERED = 4
+    PATH = 5
 
 class Grid:
     '''Holds a grid of cells that represent the maze'''
@@ -42,9 +43,9 @@ class Grid:
         for i in range(self.width):
             for j in range(self.height):
                 self._grid[i][j].changed = True
-                if i == self.end[0] and j == self.end[1]:
+                if self.end and i == self.end[0] and j == self.end[1]:
                     self._grid[i][j].val = Locations.END
-                elif i == self.start[0] and j == self.start[1]:
+                elif self.start and i == self.start[0] and j == self.start[1]:
                     self._grid[i][j].val = Locations.START
                 elif not self._grid[i][j].val == Locations.WALL:
                     self._grid[i][j].val = Locations.EMPTY
@@ -57,9 +58,9 @@ class Grid:
         for i in range(self.width):
             x = []
             for j in range(self.height):
-                if i == self.end[0] and j == self.end[1]:
+                if self.end and i == self.end[0] and j == self.end[1]:
                     x.append(self.Cell(Locations.END))
-                elif i == self.start[0] and j == self.start[1]:
+                elif self.start and i == self.start[0] and j == self.start[1]:
                     x.append(self.Cell(Locations.START))
                 else:
                     x.append(self.Cell(Locations.EMPTY))
@@ -67,14 +68,42 @@ class Grid:
 
     def update_box(self, x, y, val):
         '''Changes the value of a grid cell at an x, y coordinate'''
-        self._grid[x][y].set_val(val)
+
+        # This check is nessicary so only the user can override start and end values
+        if val != Locations.DISCOVERED:
+            curr_val = self._grid[x][y].val
+            if curr_val == Locations.START:
+                self.start = None
+            if curr_val == Locations.END:
+                self.end = None
+
+        if val == Locations.END:
+            if self.end:
+                i, j = self.end
+                self._grid[i][j].set_val(Locations.EMPTY)
+            self._grid[x][y].set_val(Locations.END)
+            self.end = (x, y)
+        elif val == Locations.START:
+            if self.start:
+                i, j = self.start
+                self._grid[i][j].set_val(Locations.EMPTY)
+            self._grid[x][y].set_val(Locations.START)
+            self.start = (x, y)
+        else:
+            self._grid[x][y].set_val(val)
+
+
+
+
+
+
 
     def draw(self, graphics, menu_rect):
         '''Draws each cell in the grid'''
         def draw_box(x, y, val, graphics):
             if val == Locations.START:
                 color = (255, 0, 0)
-            elif val == Locations.END:
+            elif val == Locations.END or val == Locations.PATH:
                 color = (0, 255, 0)
             elif val == Locations.EMPTY:
                 color = (255, 255, 255)

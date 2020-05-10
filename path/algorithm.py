@@ -34,7 +34,7 @@ class Algorithm(ABC):
     def trace_path(self):
         '''Updates grid step by step so a path is drawn from the end to the start'''
         row, col = self._parent
-        self.grid.update_box(row, col, Locations.END)
+        self.grid.update_box(row, col, Locations.PATH)
 
         if self._parent == self.grid.start:
             self._state = State.RESET
@@ -65,24 +65,21 @@ class Algorithm(ABC):
 
 
 class BFS(Algorithm):
-    '''BFS class'''
+    '''Breath First Search Algorithm'''
     def __init__(self, grid):
         super().__init__(grid)
-        self._q = queue.Queue()
+        self._q = None
         self._grid = grid
-        x, y = self._grid.start
-        self._grid.update_box(x, y, Locations.DISCOVERED)
-        self._q.put(grid.start)
-        self._finished = False
+        self._state = State.RESET
+
 
     def reset(self):
         super().reset()
         self._grid.reset()
         self._q = queue.Queue()
         x, y = self._grid.start
+        self._q.put((x, y))
         self._grid.update_box(x, y, Locations.DISCOVERED)
-        self._q.put(self._grid.start)
-        self._finished = False
         self._state = State.SOLVING
 
     def step(self):
@@ -104,6 +101,8 @@ class BFS(Algorithm):
                     if not self._grid.get_val(i, j) == Locations.DISCOVERED:
                         self._parent_map[neighbor] = vertex
                         self._q.put(neighbor)
+                        if self._grid.get_val(i, j) == Locations.END:
+                            return True
                         self._grid.update_box(i, j, Locations.DISCOVERED)
             return True
         else:

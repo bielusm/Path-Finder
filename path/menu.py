@@ -1,23 +1,37 @@
 '''The menu interface in the simulation'''
 import pygame
 from pygame import Surface
-
+from path.grid import Locations
 
 class Button:
     '''A simple button class'''
     _padding = 10
 
-    def __init__(self, pos, text, function):
+    def __init__(self, pos, text, color, function):
         self.pos = pos
         self._function = function
+        if text:
+            self._surface = self.create_text_surface(text)
+        else:
+            self._surface = self.create_rect_surface(color)
+
+    def create_rect_surface(self, color):
+        '''Creates a rect surface and fills it with color'''
+        surface = Surface((self._padding*2, self._padding*2))
+        surface.fill(color)
+        return surface
+
+    def create_text_surface(self, text):
+        '''Creates a text surface with a white background'''
         self._default_font = pygame.font.Font(
             pygame.font.get_default_font(), 20)
         text_surface = self._default_font.render(text, True, (0, 0, 0))
-        self._surface = Surface((text_surface.get_width(
+        surface = Surface((text_surface.get_width(
         ) + self._padding, text_surface.get_height() + self._padding))
-        self._surface.fill((255, 255, 255))
-        self._surface.blit(
+        surface.fill((255, 255, 255))
+        surface.blit(
             text_surface, (self._padding // 2, self._padding // 2))
+        return surface
 
     def click(self, x, y):
         '''Checks if the user has clicked the button and calls a function if so'''
@@ -35,8 +49,8 @@ class Button:
 
 class RadioButton(Button):
     '''A radiobutton to select different values'''
-    def __init__(self, pos, text, function, val):
-        super().__init__(pos, text, function)
+    def __init__(self, pos, text, color, function, val):
+        super().__init__(pos, text, color, function)
         self._val = val
 
     def click(self, x, y):
@@ -45,29 +59,59 @@ class RadioButton(Button):
 
 
 class Menu:
+    '''Creates the Menu on screen'''
+    tile_text_pos = (10, 100)
+
     '''The menu UI'''
     def __init__(self, screen_size, state):
         self.state = state
         self.width, self.height = (200, 200)
         self.pos = (screen_size[0]-self.width, screen_size[1]-self.width)
         self.menu = pygame.Surface((self.width, self.height))
-        self.menu.set_alpha(100)
-        self.menu.fill(pygame.Color(255, 0, 255))
+        self._tile_text = "Wall"
         self._buttons = self.add_buttons()
 
+    def blit_text(self, text):
+        '''Blits the current tile text to the menu'''
+        default_font_22 = pygame.font.Font(pygame.font.get_default_font(), 20)
+        default_font_16 = pygame.font.Font(pygame.font.get_default_font(), 16)
+        tile_text_heading = default_font_22.render("Current Tile:", True, (0, 0, 0))
+        tile_text = default_font_16.render(text, True, (0, 0, 0))
+        self.menu.blit(
+            tile_text_heading, (self.tile_text_pos))
+        self.menu.blit(
+            tile_text, (self.tile_text_pos[0],
+                        self.tile_text_pos[1] + tile_text_heading.get_size()[1]))
 
     def add_buttons(self):
         '''Creates and returns a list of all the buttons in the menu'''
         buttons = []
-        button = Button((0, 0), 'Start', self.start_running)
+        button = Button((0, 0), 'Start', None, self.start_running)
         buttons.append(button)
-        button = Button((0, 40), 'Reset', self.reset)
+        button = Button((0, 40), 'Reset', None, self.reset)
         buttons.append(button)
-        button = RadioButton((100, 0), 'BFS', self.change_alg, 0)
+        button = RadioButton((100, 0), 'BFS', None, self.change_alg, 0)
         buttons.append(button)
-        button = RadioButton((100, 40), 'DFS', self.change_alg, 1)
+        button = RadioButton((100, 40), 'DFS', None, self.change_alg, 1)
+        buttons.append(button)
+        button = RadioButton((10, 160), None, (255, 255, 0), self.change_tile, Locations.START)
+        buttons.append(button)
+        button = RadioButton((40, 160), None, (0, 255, 0), self.change_tile, Locations.END)
+        buttons.append(button)
+        button = RadioButton((70, 160), None, (0, 0, 0), self.change_tile, Locations.WALL)
         buttons.append(button)
         return buttons
+
+    def change_tile(self, val):
+        '''Changes the tile_text based on the given value'''
+        self.state["current_tile"] = val
+        if val == Locations.START:
+            self._tile_text = "Start"
+        elif val == Locations.END:
+            self._tile_text = "End"
+        else:
+            self._tile_text = "Wall"
+
 
     def reset(self):
         '''Sets the reset state to true'''
@@ -87,13 +131,16 @@ class Menu:
         calls their click method to see if they were clicked
         '''
         offset_x, offset_y = self.pos
+        menu_clicked = self.menu.get_rect().collidepoint(x- offset_x, y - offset_y)
         for button in self._buttons:
             if button.click(x - offset_x, y - offset_y):
-                return True
-        return False
+                break
+        return menu_clicked
 
     def draw(self, graphics):
         '''Draws the menu'''
-        graphics.draw_surface(self.menu, self.pos)    
+        self.menu.fill(pygame.Color(200, 200, 200))
+        self.blit_text(self._tile_text)
+        graphics.draw_surface(self.menu, self.pos)
         for button in self._buttons:
             button.draw(graphics, self.pos)
