@@ -93,11 +93,6 @@ class Grid:
             self._grid[x][y].set_val(val)
 
 
-
-
-
-
-
     def draw(self, graphics, menu_rect):
         '''Draws each cell in the grid'''
         def draw_box(x, y, val, graphics):
