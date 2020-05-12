@@ -100,7 +100,7 @@ class RadioButton(Button):
 class Menu:
     '''Creates the Menu on screen'''
     tile_text_pos = (10, 100)
-    menu_size = (180, 300)
+    menu_size = (190, 200)
     '''The menu UI'''
     def __init__(self, screen_size, state):
         self.state = state
@@ -109,18 +109,6 @@ class Menu:
         self.menu = pygame.Surface((self.width, self.height))
         self._tile_text = "Wall"
         self._buttons = self.add_buttons()
-
-    def blit_text(self, text):
-        '''Blits the current tile text to the menu'''
-        default_font_22 = pygame.font.Font(pygame.font.get_default_font(), 20)
-        default_font_16 = pygame.font.Font(pygame.font.get_default_font(), 16)
-        tile_text_heading = default_font_22.render("Current Tile:", True, (0, 0, 0))
-        tile_text = default_font_16.render(text, True, (0, 0, 0))
-        self.menu.blit(
-            tile_text_heading, (self.tile_text_pos))
-        self.menu.blit(
-            tile_text, (self.tile_text_pos[0],
-                        self.tile_text_pos[1] + tile_text_heading.get_size()[1]))
 
     def add_buttons(self):
         '''Creates and returns a list of all the buttons in the menu'''
@@ -132,12 +120,12 @@ class Menu:
         alg_radio_container.add_button((100, 40), 'DFS', None, self.change_alg, 1)
         buttons.append(alg_radio_container)
         tile_container = RadioButtonContainer()
-        tile_container.add_button((10, 160), None, (255, 255, 0), self.change_tile, Locations.START)
-        tile_container.add_button((40, 160), None, (0, 255, 0), self.change_tile, Locations.END)
-        tile_container.add_button((70, 160), None, (0, 0, 0), self.change_tile, Locations.WALL)
+        tile_container.add_button((10, 100), None, (255, 255, 0), self.change_tile, Locations.START)
+        tile_container.add_button((40, 100), None, (0, 255, 0), self.change_tile, Locations.END)
+        tile_container.add_button((70, 100), None, (0, 0, 0), self.change_tile, Locations.WALL)
         buttons.append(tile_container)
-        buttons.append(Button((0, 190), 'Load Map', None, self.load_map))
-        buttons.append(Button((100, 190), 'Save Map', None, self.save_map))
+        buttons.append(Button((0, 130), 'Load Map', None, self.load_map))
+        buttons.append(Button((100, 130), 'Save Map', None, self.save_map))
         return buttons
 
     def load_map(self):
@@ -184,7 +172,6 @@ class Menu:
     def draw(self, graphics):
         '''Draws the menu'''
         self.menu.fill(pygame.Color(200, 200, 200))
-        self.blit_text(self._tile_text)
         graphics.draw_surface(self.menu, self.pos)
         for button in self._buttons:
             button.draw(graphics, self.pos)
