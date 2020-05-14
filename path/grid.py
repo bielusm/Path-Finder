@@ -116,4 +116,5 @@ class Grid:
                     curr.changed = False
 
     def save_to_file(self):
+        '''Saves the grid to a txt file'''
         print("Saving")

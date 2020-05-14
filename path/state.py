@@ -14,5 +14,5 @@ class State():
     '''Current state and context of program'''
     curr = FSM.WAIT
     context = dict(
-            alg=0,
-            current_tile=Locations.WALL)
+                alg=0,
+                current_tile=Locations.WALL)
