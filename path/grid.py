@@ -114,3 +114,6 @@ class Grid:
                 if curr.changed and not menu_rect.collidepoint(x, y):
                     draw_box(x, y, curr.val, graphics)
                     curr.changed = False
+
+    def save_to_file(self):
+        print("Saving")

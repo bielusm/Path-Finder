@@ -1,9 +1,23 @@
 '''The menu interface in the simulation'''
-import pygame
+from abc import ABC, abstractmethod
 from pygame import Surface
+import pygame
 from path.grid import Locations
+from path.world import FSM
 
-class Button:
+class Clickable(ABC):
+    '''Defines a UI Element that can be clicked and drawn'''
+
+    @abstractmethod
+    def click(self, x, y):
+        '''Test if element has been clicked'''
+
+    @abstractmethod
+    def draw(self, graphics, offset):
+        '''Draw an element'''
+
+
+class Button(Clickable):
     '''A simple button class'''
     _padding = 20
 
@@ -47,7 +61,7 @@ class Button:
         graphics.draw_surface(self._surface, (x + x_offset, y + y_offset))
 
 
-class RadioButtonContainer():
+class RadioButtonContainer(Clickable):
     '''Container for radio buttons'''
     def __init__(self):
         super().__init__()
@@ -136,7 +150,7 @@ class Menu:
 
     def change_tile(self, val):
         '''Changes the tile_text based on the given value'''
-        self.state["current_tile"] = val
+        self.state.context["current_tile"] = val
         if val == Locations.START:
             self._tile_text = "Start"
         elif val == Locations.END:
@@ -147,15 +161,15 @@ class Menu:
 
     def reset(self):
         '''Sets the reset state to true'''
-        self.state["reset"] = True
+        self.state.curr = FSM.RESET
 
     def start_running(self):
         '''Sets the running state to true'''
-        self.state["running"] = True
+        self.state.curr = FSM.RUN
 
     def change_alg(self, alg):
         '''Changes the alg state to the given alg number'''
-        self.state["alg"] = alg
+        self.state.context["alg"] = alg
 
     def button_click(self, x, y):
         '''

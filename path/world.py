@@ -1,25 +1,22 @@
 '''Module containing the render update and event code'''
 import pygame
-
+from path.state import State, FSM
 from path.graphics import Graphics
 from path.menu import Menu
 from path.grid import Grid, Locations
 from path.algorithm import BFS, DFS
 
+
 class World:
     '''A class representing the current state of the world'''
     def __init__(self, width, height, scale):
-        self._state = dict(
-            running=False,
-            alg=0,
-            reset=False,
-            current_tile=Locations.WALL)
+        self.state = State()
         self._width = width
         self._height = height
         self._scale = scale
         self._grid = Grid(width, height)
         self._graphics = Graphics(width, height, scale)
-        self._menu = Menu((width*scale, height*scale), self._state)
+        self._menu = Menu((width*scale, height*scale), self.state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
     def handle_events(self):
         '''Handles windows and pygame events'''
@@ -47,7 +44,7 @@ class World:
                     if not self._menu.button_click(x, y):
                         if lclick:
                             self._grid.update_box(
-                                x // self._scale, y // self._scale, self._state["current_tile"])
+                                x // self._scale, y // self._scale, self.state.context["current_tile"])
                         if rclick:
                             self._grid.update_box(
                                 x // self._scale, y // self._scale, Locations.EMPTY)
@@ -55,12 +52,13 @@ class World:
 
     def update(self):
         '''Updates the current state of the world'''
-        if self._state["reset"]:
-            self._state["reset"] = False
+        if self.state.curr == FSM.RESET:
             self._grid.reset()
-        elif self._state["running"]:
-            if self._algs[self._state["alg"]]:
-                self._state["running"] = self._algs[self._state["alg"]].step()
+            self.state.curr = FSM.WAIT
+        elif self.state.curr == FSM.RUN:
+            if self._algs[self.state.context["alg"]]:
+                if not self._algs[self.state.context["alg"]].step():
+                    self.state.curr = FSM.WAIT
 
     def draw(self):
         '''Draws everything in the world'''
