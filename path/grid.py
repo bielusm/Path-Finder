@@ -70,7 +70,7 @@ class Grid:
         '''Changes the value of a grid cell at an x, y coordinate'''
 
         # This check is nessicary so only the user can override start and end values
-        if val != Locations.DISCOVERED:
+        if val != Locations.DISCOVERED and val != Locations.PATH:
             curr_val = self._grid[x][y].val
             if curr_val == Locations.START:
                 self.start = None
@@ -114,7 +114,3 @@ class Grid:
                 if curr.changed and not menu_rect.collidepoint(x, y):
                     draw_box(x, y, curr.val, graphics)
                     curr.changed = False
-
-    def save_to_file(self):
-        '''Saves the grid to a txt file'''
-        print("Saving")
