@@ -54,11 +54,17 @@ class World:
         '''Updates the current state of the world'''
         if self.state.curr == FSM.RESET:
             self._grid.reset()
+            self._algs[self.state.context["alg"]].reset()
             self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.RUN:
-            if self._algs[self.state.context["alg"]]:
-                if not self._algs[self.state.context["alg"]].step():
-                    self.state.curr = FSM.WAIT
+            if not self._algs[self.state.context["alg"]].step():
+                self.state.curr = FSM.WAIT
+        elif self.state.curr == FSM.SAVE:
+            self._grid.save_to_file(self.state.context["map"])
+            self.state.curr = FSM.WAIT
+        elif self.state.curr == FSM.LOAD:
+            self._grid.load_from_file(self.state.context["map"])
+            self.state.curr = FSM.RESET
 
     def draw(self):
         '''Draws everything in the world'''

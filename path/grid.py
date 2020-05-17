@@ -1,4 +1,5 @@
 '''The main grid module'''
+from queue import LifoQueue
 from enum import Enum
 
 class Locations(Enum):
@@ -9,6 +10,7 @@ class Locations(Enum):
     WALL = 3
     DISCOVERED = 4
     PATH = 5
+    ACTIVE = 6
 
 class Grid:
     '''Holds a grid of cells that represent the maze'''
@@ -28,6 +30,7 @@ class Grid:
     height = 0
     start = (0, 1)
     end = (19, 15)
+    _active_discoveries = LifoQueue()
 
     def __init__(self, width, height):
         self.width = width
@@ -89,6 +92,10 @@ class Grid:
                 self._grid[i][j].set_val(Locations.EMPTY)
             self._grid[x][y].set_val(Locations.START)
             self.start = (x, y)
+        elif val == Locations.DISCOVERED:
+            self._grid[x][y].set_val(Locations.DISCOVERED)
+            self._active_discoveries.put((x, y))
+
         else:
             self._grid[x][y].set_val(val)
 
@@ -98,7 +105,7 @@ class Grid:
         def draw_box(x, y, val, graphics):
             if val == Locations.START:
                 color = (255, 0, 0)
-            elif val == Locations.END or val == Locations.PATH:
+            elif val in [Locations.END, Locations.PATH, Locations.ACTIVE]:
                 color = (0, 255, 0)
             elif val == Locations.EMPTY:
                 color = (255, 255, 255)
@@ -114,3 +121,34 @@ class Grid:
                 if curr.changed and not menu_rect.collidepoint(x, y):
                     draw_box(x, y, curr.val, graphics)
                     curr.changed = False
+
+        # Highlight newest discoveries
+        while not self._active_discoveries.empty():
+            pos = self._active_discoveries.get()
+            x, y = pos
+            draw_box(x, y, Locations.ACTIVE, graphics)
+            self._grid[x][y].changed = True
+
+    def save_to_file(self, num):
+        '''Saves the current grid to a txt file'''
+        self.reset()
+        file = open(f'grid{num}.txt', 'w', buffering=1)
+        for j in range(self.height):
+            for i in range(self.width):
+                file.write(str(self._grid[i][j].val.value))
+            file.write('\n')
+        print(f'File grid{num} written')
+        file.close()
+
+    def load_from_file(self, num):
+        '''Loads current grid from file'''
+        try:
+            file = open(f'grid{num}.txt', 'r', buffering=1)
+            for j in range(self.height):
+                line = file.readline().rstrip()
+                for i, val in enumerate(line):
+                    val = Locations(int(val))
+                    self.update_box(i, j, val)
+            print("File loaded")
+        except FileNotFoundError:
+            print("File not found")

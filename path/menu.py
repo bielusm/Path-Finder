@@ -114,14 +114,13 @@ class RadioButton(Button):
 class Menu:
     '''Creates the Menu on screen'''
     tile_text_pos = (10, 100)
-    menu_size = (190, 200)
+    menu_size = (190, 240)
     '''The menu UI'''
     def __init__(self, screen_size, state):
         self.state = state
         self.width, self.height = self.menu_size
         self.pos = (screen_size[0]-self.width, screen_size[1]-self.height)
         self.menu = pygame.Surface((self.width, self.height))
-        self._tile_text = "Wall"
         self._buttons = self.add_buttons()
 
     def add_buttons(self):
@@ -140,36 +139,42 @@ class Menu:
         buttons.append(tile_container)
         buttons.append(Button((0, 130), 'Load Map', None, self.load_map))
         buttons.append(Button((100, 130), 'Save Map', None, self.save_map))
+        map_container = RadioButtonContainer()
+        map_container.add_button((0, 180), '0', None, self.change_map, 0)
+        map_container.add_button((40, 180), '1', None, self.change_map, 1)
+        map_container.add_button((80, 180), '2', None, self.change_map, 2)
+        buttons.append(map_container)
         return buttons
 
+    def change_map(self, map_val):
+        '''Changes map variable'''
+        self.state.context["map"] = map_val
+
     def load_map(self):
-        '''Will load a map from file'''
+        '''Sets program state to load'''
+        self.state.curr = FSM.LOAD
 
     def save_map(self):
-        '''Will saves a map to file'''
+        '''Sets program state to save'''
+        self.state.curr = FSM.SAVE
 
     def change_tile(self, val):
         '''Changes the tile_text based on the given value'''
         self.state.context["current_tile"] = val
-        if val == Locations.START:
-            self._tile_text = "Start"
-        elif val == Locations.END:
-            self._tile_text = "End"
-        else:
-            self._tile_text = "Wall"
 
 
     def reset(self):
-        '''Sets the reset state to true'''
+        '''Sets program state to reset'''
         self.state.curr = FSM.RESET
 
     def start_running(self):
-        '''Sets the running state to true'''
+        '''Sets program state to run'''
         self.state.curr = FSM.RUN
 
     def change_alg(self, alg):
         '''Changes the alg state to the given alg number'''
         self.state.context["alg"] = alg
+        self.state.curr = FSM.RESET
 
     def button_click(self, x, y):
         '''

@@ -15,4 +15,5 @@ class State():
     curr = FSM.WAIT
     context = dict(
                 alg=0,
-                current_tile=Locations.WALL)
+                current_tile=Locations.WALL,
+                map=0)
