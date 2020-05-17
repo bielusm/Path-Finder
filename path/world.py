@@ -44,10 +44,14 @@ class World:
                     if not self._menu.button_click(x, y):
                         if lclick:
                             self._grid.update_box(
-                                x // self._scale, y // self._scale, self.state.context["current_tile"])
+                                x // self._scale,
+                                y // self._scale,
+                                self.state.context["current_tile"])
                         if rclick:
                             self._grid.update_box(
-                                x // self._scale, y // self._scale, Locations.EMPTY)
+                                x // self._scale,
+                                y // self._scale,
+                                Locations.EMPTY)
         return True
 
     def update(self):
