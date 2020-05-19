@@ -1,16 +1,6 @@
 '''The main grid module'''
 from queue import LifoQueue
-from enum import Enum
-
-class Locations(Enum):
-    '''Each state a cell can be in'''
-    EMPTY = 0
-    START = 1
-    END = 2
-    WALL = 3
-    DISCOVERED = 4
-    PATH = 5
-    ACTIVE = 6
+from path.enums import Locations
 
 class Grid:
     '''Holds a grid of cells that represent the maze'''
@@ -100,7 +90,7 @@ class Grid:
             self._grid[x][y].set_val(val)
 
 
-    def draw(self, graphics, menu_rect):
+    def draw(self, graphics):
         '''Draws each cell in the grid'''
         def draw_box(x, y, val, graphics):
             if val == Locations.START:
@@ -118,9 +108,8 @@ class Grid:
         for x in range(self.width):
             for y in range(self.height):
                 curr = self._grid[x][y]
-                if curr.changed and not menu_rect.collidepoint(x, y):
-                    draw_box(x, y, curr.val, graphics)
-                    curr.changed = False
+                draw_box(x, y, curr.val, graphics)
+                curr.changed = False
 
         # Highlight newest discoveries
         while not self._active_discoveries.empty():

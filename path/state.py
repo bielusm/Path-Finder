@@ -1,14 +1,6 @@
 '''Current State of the program'''
-from enum import Enum
-from path.grid import Locations
+from path.enums import FSM, Locations
 
-class FSM(Enum):
-    '''The different states the program can be in'''
-    RUN = 0
-    RESET = 1
-    SAVE = 2
-    LOAD = 3
-    WAIT = 4
 
 class State():
     '''Current state and context of program'''

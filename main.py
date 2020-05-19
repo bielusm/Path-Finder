@@ -1,6 +1,7 @@
 '''The start of the program'''
-from time import sleep
+import pygame
 from path.world import World
+
 
 SCALE = 10
 WIDTH = 50
@@ -10,11 +11,12 @@ HEIGHT = 50
 def main():
     '''The main loop for the program'''
     world = World(WIDTH, HEIGHT, SCALE)
+    clock = pygame.time.Clock()
     while True:
-        sleep(0.005)
+        time_delta = clock.tick()/1000.0
         if not world.handle_events():
             break
-        world.update()
+        world.update(time_delta)
         world.draw()
 
 

@@ -9,14 +9,14 @@ class Graphics:
         self._height = height
         self._scale = scale
         pygame.init()
-        self._screen = pygame.display.set_mode([width * scale, height * scale], DOUBLEBUF)
+        self.screen = pygame.display.set_mode([width * scale, height * scale], DOUBLEBUF)
         # For speed
-        self._screen.set_alpha(None)
+        self.screen.set_alpha(None)
 
     def draw_cell(self, x, y, color):
         '''Draws a grid cell in a specified location with a specified color'''
         pygame.draw.rect(
-            self._screen,
+            self.screen,
             color,
             pygame.Rect(x * self._scale,
                         y * self._scale,
@@ -25,4 +25,4 @@ class Graphics:
 
     def draw_surface(self, surface, pos):
         '''Draws a pygame surface on the main screen'''
-        self._screen.blit(surface, pos)
+        self.screen.blit(surface, pos)

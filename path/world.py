@@ -1,10 +1,11 @@
 '''Module containing the render update and event code'''
 import pygame
-from path.state import State, FSM
+from path.state import State
 from path.graphics import Graphics
-from path.menu import Menu
-from path.grid import Grid, Locations
+from path.menu import UIManager
+from path.grid import Grid
 from path.algorithm import BFS, DFS
+from path.enums import Locations, FSM
 
 
 class World:
@@ -16,7 +17,7 @@ class World:
         self._scale = scale
         self._grid = Grid(width, height)
         self._graphics = Graphics(width, height, scale)
-        self._menu = Menu((width*scale, height*scale), self.state)
+        self.manager = UIManager((width*scale, height * scale), self.state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
     def handle_events(self):
         '''Handles windows and pygame events'''
@@ -24,24 +25,28 @@ class World:
             e_type = event.type
             if e_type == pygame.QUIT:
                 return False
-            if (e_type == pygame.MOUSEBUTTONDOWN
-                    or e_type == pygame.MOUSEBUTTONUP
-                    or e_type == pygame.MOUSEMOTION):
-                x, y = event.pos
-                lclick = None
-                rclick = None
-                if e_type == pygame.MOUSEMOTION:
-                    lclick = event.buttons[0]
-                    rclick = event.buttons[2]
-                elif e_type == pygame.MOUSEBUTTONUP:
-                    lclick = 0 if event.button == 1 else None
-                    rclick = 0 if event.button == 3 else None
-                elif e_type == pygame.MOUSEBUTTONDOWN:
-                    lclick = 1 if event.button == 1 else None
-                    rclick = 1 if event.button == 3 else None
 
-                if lclick or rclick:
-                    if not self._menu.button_click(x, y):
+
+            menu_clicked = self.manager.process_events(event)
+
+            if not menu_clicked:
+                if (e_type == pygame.MOUSEBUTTONDOWN
+                        or e_type == pygame.MOUSEBUTTONUP
+                        or e_type == pygame.MOUSEMOTION):
+                    x, y = event.pos
+                    lclick = None
+                    rclick = None
+                    if e_type == pygame.MOUSEMOTION:
+                        lclick = event.buttons[0]
+                        rclick = event.buttons[2]
+                    elif e_type == pygame.MOUSEBUTTONUP:
+                        lclick = 0 if event.button == 1 else None
+                        rclick = 0 if event.button == 3 else None
+                    elif e_type == pygame.MOUSEBUTTONDOWN:
+                        lclick = 1 if event.button == 1 else None
+                        rclick = 1 if event.button == 3 else None
+
+                    if lclick or rclick:
                         if lclick:
                             self._grid.update_box(
                                 x // self._scale,
@@ -54,13 +59,18 @@ class World:
                                 Locations.EMPTY)
         return True
 
-    def update(self):
+    def update(self, time_delta):
         '''Updates the current state of the world'''
+        self.manager.update(time_delta)
         if self.state.curr == FSM.RESET:
             self._grid.reset()
             self._algs[self.state.context["alg"]].reset()
             self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.RUN:
+            self._grid.reset()
+            self._algs[self.state.context["alg"]].reset()
+            self.state.curr = FSM.RUNNING
+        elif self.state.curr == FSM.RUNNING:
             if not self._algs[self.state.context["alg"]].step():
                 self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.SAVE:
@@ -72,19 +82,7 @@ class World:
 
     def draw(self):
         '''Draws everything in the world'''
-        menu_rect = self.calc_menu_rect()
-        self._grid.draw(self._graphics, menu_rect)
-        self._menu.draw(self._graphics)
+        self._graphics.screen.fill((0, 0, 0))
+        self._grid.draw(self._graphics)
+        self.manager.draw(self._graphics.screen)
         pygame.display.flip()
-
-    def calc_menu_rect(self):
-        '''
-        Scales the menu down to grid coordinates
-        and rects a rect representing where it is
-        '''
-        rect = self._menu.menu.get_rect()
-        rect.x = self._menu.pos[0]/self._scale
-        rect.y = self._menu.pos[1]/self._scale
-        rect.width = rect.width / self._scale
-        rect.height = rect.height / self._scale
-        return rect

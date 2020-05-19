@@ -2,7 +2,7 @@
 import queue
 from abc import ABC
 from enum import Enum, auto
-from path.grid import Locations
+from path.enums import Locations
 
 class State(Enum):
     '''Every State an Algorithm can be in'''
