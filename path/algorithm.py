@@ -10,6 +10,7 @@ class State(Enum):
     TRACING = auto()
     SOLVED = auto()
     RESET = auto()
+    WAITING = auto()
 
 
 class Algorithm(ABC):
@@ -28,9 +29,13 @@ class Algorithm(ABC):
 
     def reset(self):
         '''Resets members to initial settings'''
+        self._state = State.RESET
         self._parent_map = {}
         self._parent = None
         self.grid.reset()
+        if not self.grid.start or not self.grid.end:
+            self._state = State.WAITING
+
 
     def trace_path(self):
         '''Updates grid step by step so a path is drawn from the end to the start'''
@@ -70,22 +75,25 @@ class BFS(Algorithm):
     def __init__(self, grid):
         super().__init__(grid)
         self._q = None
-        self._state = State.RESET
 
 
     def reset(self):
         super().reset()
         self._q = queue.Queue()
-        x, y = self.grid.start
-        self._q.put((x, y))
-        self.grid.update_box(x, y, Locations.DISCOVERED)
-        self._state = State.SOLVING
+
+        if self._state != State.WAITING:
+            x, y = self.grid.start
+            self._q.put((x, y))
+            self.grid.update_box(x, y, Locations.DISCOVERED)
+            self._state = State.SOLVING
 
     def step(self):
+        if self._state == State.WAITING:
+            return False
         if self._state == State.RESET:
             self.reset()
             return True
-        elif self._state == State.SOLVING:
+        if self._state == State.SOLVING:
             if not self._q.empty():
                 vertex = self._q.get()
                 x, y = vertex
@@ -104,9 +112,8 @@ class BFS(Algorithm):
                             return True
                         self.grid.update_box(i, j, Locations.DISCOVERED)
             return True
-        else:
-            # self._state == State.TRACING:
-            return self.trace_path()
+        # self._state == State.TRACING:
+        return self.trace_path()
 
 
 
@@ -125,27 +132,29 @@ class DFS(Algorithm):
         self._state = State.SOLVING
 
     def step(self):
+        if self._state == State.WAITING:
+            return False
         if self._state == State.RESET:
             self.reset()
             return True
-        elif self._state == State.TRACING:
+        if self._state == State.TRACING:
             return self.trace_path()
-        else:
-            # self._state == State.SOLVING:
-            if not self._s.empty():
-                vertex = self._s.get()
-                x, y = vertex
-                if self.grid.get_val(x, y) == Locations.END:
-                    self._parent = self.grid.end
-                    self._state = State.TRACING
-                    return True
-                if self.grid.get_val(x, y) != Locations.DISCOVERED:
-                    self.grid.update_box(x, y, Locations.DISCOVERED)
-                    edges = self.get_edges(x, y)
-                    while not edges.empty():
-                        edge = edges.get()
-                        i, j = edge
-                        if self.grid.get_val(i, j) != Locations.DISCOVERED:
-                            self._s.put(edge)
-                            self._parent_map[edge] = vertex
-            return True
+
+        # self._state == State.SOLVING:
+        if not self._s.empty():
+            vertex = self._s.get()
+            x, y = vertex
+            if self.grid.get_val(x, y) == Locations.END:
+                self._parent = self.grid.end
+                self._state = State.TRACING
+                return True
+            if self.grid.get_val(x, y) != Locations.DISCOVERED:
+                self.grid.update_box(x, y, Locations.DISCOVERED)
+                edges = self.get_edges(x, y)
+                while not edges.empty():
+                    edge = edges.get()
+                    i, j = edge
+                    if self.grid.get_val(i, j) != Locations.DISCOVERED:
+                        self._s.put(edge)
+                        self._parent_map[edge] = vertex
+        return True

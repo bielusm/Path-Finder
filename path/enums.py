@@ -15,6 +15,7 @@ class FSM(IntEnum):
     SAVE = 3
     LOAD = 4
     WAIT = 5
+    CHANGE_SIZE = 6
 
 class Locations(IntEnum):
     '''Each state a cell can be in'''

@@ -13,6 +13,14 @@ class Graphics:
         # For speed
         self.screen.set_alpha(None)
 
+    def change_size(self, width, height, scale):
+        '''Changes the size of the screen'''
+        self._scale = scale
+        self.screen = pygame.display.set_mode(
+            [width * self._scale, height * self._scale],
+            DOUBLEBUF)
+
+
     def draw_cell(self, x, y, color):
         '''Draws a grid cell in a specified location with a specified color'''
         pygame.draw.rect(

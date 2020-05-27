@@ -3,65 +3,117 @@ import pygame_gui
 import pygame
 from path.enums import FSM, Algorithms, Locations
 
+MENU_SIZE = (195, 300)
+
 class UIManager:
     '''Container for the UI interface'''
     def __init__(self, screen_size, state):
         self.state = state
         self._manager = pygame_gui.UIManager(screen_size, 'theme.json')
+        screen_width, screen_height = screen_size
+        menu_width, menu_height = MENU_SIZE
         self.ui_window = pygame_gui.elements.ui_window.UIWindow(
-            rect=pygame.Rect((50, 50), (200, 300)),
+            rect=pygame.Rect(
+                (screen_width - menu_width, screen_height - menu_height),
+                (menu_width, menu_height)),
             manager=self._manager)
+
+        window_container = self.ui_window.get_container()
+        start_rect = pygame.Rect((0, 0), (50, 30))
         self.start_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 0), (50, 50)),
+            relative_rect=start_rect,
             text='Start',
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
 
+        reset_rect = pygame.Rect((start_rect.right, 0), (50, 30))
         self.reset_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((50, 0), (50, 50)),
+            relative_rect=reset_rect,
             text='Reset',
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
+
+        alg_label_rect = pygame.Rect((0, 0), (88, 20))
+        alg_label_rect.centery = reset_rect.bottom + 20
+        pygame_gui.elements.UILabel(
+            text='Algorithm: ',
+            relative_rect=alg_label_rect,
+            container=window_container,
+            manager=self._manager
+        )
+
+        alg_rect = pygame.Rect((95, reset_rect.bottom + 5), (50, 30))
 
         self.algorithm_drop_down = pygame_gui.elements.ui_drop_down_menu.UIDropDownMenu(
-            relative_rect=pygame.Rect((0, 50), (60, 30)),
+            relative_rect=alg_rect,
             starting_option=Algorithms.BFS.name,
             options_list=[Algorithms.BFS.name, Algorithms.DFS.name],
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container,
+            )
 
+        tile_label_rect = pygame.Rect((0, 0), (48, 20))
+        tile_label_rect.centery = alg_rect.bottom + 20
+        pygame_gui.elements.UILabel(
+            text='Tile: ',
+            relative_rect=tile_label_rect,
+            container=window_container,
+            manager=self._manager
+        )
+
+        tile_rect = pygame.Rect((95, alg_rect.bottom+5), (65, 30))
         self.tile_drop_down = pygame_gui.elements.ui_drop_down_menu.UIDropDownMenu(
-            relative_rect=pygame.Rect((60, 50), (80, 30)),
+            relative_rect=tile_rect,
             starting_option=Locations.WALL.name,
             options_list=[Locations.WALL.name, Locations.START.name, Locations.END.name],
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
 
+        save_btn_rect = pygame.Rect((0, tile_rect.bottom+5), (80, 30))
         self.save_map_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((0, 80), (80, 30)),
+            relative_rect=save_btn_rect,
             text='Save Map',
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
 
+        load_btn_rect = pygame.Rect((save_btn_rect.right, tile_rect.bottom+5), (80, 30))
         self.load_map_button = pygame_gui.elements.UIButton(
-            relative_rect=pygame.Rect((80, 80), (80, 30)),
+            relative_rect=load_btn_rect,
             text='Load Map',
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
 
-
-        self.map_drop_down = pygame_gui.elements.ui_drop_down_menu.UIDropDownMenu(
-            relative_rect=pygame.Rect((0, 110), (80, 30)),
+        map_drop_down_rect = pygame.Rect((0, load_btn_rect.bottom), (80, 30))
+        self.map_drop_down = pygame_gui.elements.UIDropDownMenu(
+            relative_rect=map_drop_down_rect,
             starting_option='Map 0',
             options_list=['Map 0', 'Map 1', 'Map 2'],
             manager=self._manager,
-            container=self.ui_window)
+            container=window_container)
 
+        grid_x_rect = pygame.Rect((0, map_drop_down_rect.bottom + 5), (40, 0))
+        self.grid_x_text_entry = pygame_gui.elements.UITextEntryLine(
+            relative_rect=grid_x_rect,
+            manager=self._manager,
+            container=self.ui_window
+        )
+        self.grid_x_text_entry.set_allowed_characters('numbers')
+        self.grid_x_text_entry.set_text_length_limit(3)
 
+        grid_button_rect = pygame.Rect(
+            (grid_x_rect.right+5, map_drop_down_rect.bottom + 5),
+            (75, 30))
+        self.grid_button = pygame_gui.elements.UIButton(
+            relative_rect=grid_button_rect,
+            text='Set Grid',
+            manager=self._manager,
+            container=window_container)
 
         self.blocking = False
 
-
+    def set_resolution(self, size):
+        '''Passes a size tuple to the manager to change the resolution'''
+        self._manager.set_window_resolution(size)
 
 
 
@@ -78,6 +130,8 @@ class UIManager:
                     self.save_map()
                 elif event.ui_element == self.load_map_button:
                     self.load_map()
+                elif event.ui_element == self.grid_button:
+                    self.set_grid_size()
             elif event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
                 text = event.text
                 if event.ui_element == self.algorithm_drop_down:
@@ -87,9 +141,6 @@ class UIManager:
                 elif event.ui_element == self.map_drop_down:
                     self.change_map(text)
 
-
-
-
         # This check makes it so the grid will be disabled when the user clicks on the menu
         elif (event.type == pygame.MOUSEBUTTONDOWN
               and self.ui_window.check_clicked_inside_or_blocking(event)):
@@ -98,7 +149,6 @@ class UIManager:
             self.blocking = False
         self._manager.process_events(event)
         return self.blocking
-
 
 
     def update(self, time_delta):
@@ -139,6 +189,16 @@ class UIManager:
     def save_map(self):
         '''Sets program state to save'''
         self.state.curr = FSM.SAVE
+
+    def set_grid_size(self):
+        '''Sets EITHER x or y in the grid_size tuple'''
+        x = self.grid_x_text_entry.get_text()
+        if x:
+            x = (int(x))
+            if 3 <= x <= 100:
+                self.state.context["grid_size"] = (int(x), int(x))
+                self.state.curr = FSM.CHANGE_SIZE
+
 
     def change_tile(self, text):
         '''Changes the tile_text based on the given value'''

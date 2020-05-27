@@ -3,14 +3,13 @@ import pygame
 from path.world import World
 
 
-SCALE = 10
 WIDTH = 50
 HEIGHT = 50
 
 
 def main():
     '''The main loop for the program'''
-    world = World(WIDTH, HEIGHT, SCALE)
+    world = World(WIDTH, HEIGHT)
     clock = pygame.time.Clock()
     while True:
         time_delta = clock.tick()/1000.0

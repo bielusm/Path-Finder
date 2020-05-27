@@ -1,3 +1,4 @@
+
 '''The main grid module'''
 from queue import LifoQueue
 from path.enums import Locations
@@ -18,8 +19,8 @@ class Grid:
     _grid = []
     width = 0
     height = 0
-    start = (0, 1)
-    end = (19, 15)
+    start = None
+    end = None
     _active_discoveries = LifoQueue()
 
     def __init__(self, width, height):

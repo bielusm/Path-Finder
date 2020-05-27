@@ -7,18 +7,41 @@ from path.grid import Grid
 from path.algorithm import BFS, DFS
 from path.enums import Locations, FSM
 
+MAX_SIZE = 720
+MIN_SIZE = 200
+
+def calc_scale(width, height):
+    '''Calculates the scale given the width and height'''
+    min_val = min(width, height)
+    max_val = max(width, height)
+    scale = MAX_SIZE//max_val
+    if scale*min_val < MIN_SIZE:
+        scale = MIN_SIZE//min_val
+    return scale
+
 
 class World:
     '''A class representing the current state of the world'''
-    def __init__(self, width, height, scale):
-        self.state = State()
-        self._width = width
-        self._height = height
-        self._scale = scale
+    def __init__(self, width, height):
+        self._scale = calc_scale(width, height)
+        self.state = State(grid_size=(width, height))
         self._grid = Grid(width, height)
-        self._graphics = Graphics(width, height, scale)
-        self.manager = UIManager((width*scale, height * scale), self.state)
+        self._graphics = Graphics(width, height, self._scale)
+        self.manager = UIManager((width*self._scale, height * self._scale), self.state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
+
+
+
+    def change_size(self):
+        '''Reinitializes all objects with new grid size'''
+        width, height = self.state.context['grid_size']
+        self._scale = calc_scale(width, height)
+        self._grid = Grid(width, height)
+        self._graphics.change_size(width, height, self._scale)
+        self.manager.set_resolution((width*self._scale, height * self._scale))
+        self._algs = [BFS(self._grid), DFS(self._grid)]
+
+
     def handle_events(self):
         '''Handles windows and pygame events'''
         for event in pygame.event.get():
@@ -79,6 +102,9 @@ class World:
         elif self.state.curr == FSM.LOAD:
             self._grid.load_from_file(self.state.context["map"])
             self.state.curr = FSM.RESET
+        elif self.state.curr == FSM.CHANGE_SIZE:
+            self.change_size()
+            self.state.curr = FSM.WAIT
 
     def draw(self):
         '''Draws everything in the world'''
