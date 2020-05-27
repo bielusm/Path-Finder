@@ -121,8 +121,14 @@ class Grid:
 
     def save_to_file(self, num):
         '''Saves the current grid to a txt file'''
+        # Resets grid so no tiles are marked as discovered or traced
         self.reset()
+        # Opens correct grid file
         file = open(f'grid{num}.txt', 'w', buffering=1)
+        # Writes width and height
+        file.write(str(self.width) + '\n')
+        file.write(str(self.height) + '\n')
+        # Writes each tile to grid add a newline per each row
         for j in range(self.height):
             for i in range(self.width):
                 file.write(str(self._grid[i][j].val.value))
@@ -133,9 +139,18 @@ class Grid:
     def load_from_file(self, num):
         '''Loads current grid from file'''
         try:
+            # Open correct file
             file = open(f'grid{num}.txt', 'r', buffering=1)
+
+            # rstrip removes the newline character
+            self.width = int(file.readline().rstrip())
+            self.height = int(file.readline().rstrip())
+
+            #Read each row of the grid
             for j in range(self.height):
                 line = file.readline().rstrip()
+                # Takes the value and index of the value from the line
+                # and sets the grid cell to that value
                 for i, val in enumerate(line):
                     val = Locations(int(val))
                     self.update_box(i, j, val)
