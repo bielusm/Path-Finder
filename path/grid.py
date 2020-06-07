@@ -3,10 +3,12 @@
 from queue import LifoQueue
 from path.enums import Locations
 
+
 class Grid:
     '''Holds a grid of cells that represent the maze'''
     class Cell:
         '''Each cell of the grid'''
+
         def __init__(self, val):
             self.val = val
             self.changed = True
@@ -90,7 +92,6 @@ class Grid:
         else:
             self._grid[x][y].set_val(val)
 
-
     def draw(self, graphics):
         '''Draws each cell in the grid'''
         def draw_box(x, y, val, graphics):
@@ -137,7 +138,10 @@ class Grid:
         file.close()
 
     def load_from_file(self, num):
-        '''Loads current grid from file'''
+        '''
+        Loads current grid from file
+        Returns the width and height of the grid
+        '''
         try:
             # Open correct file
             file = open(f'grid{num}.txt', 'r', buffering=1)
@@ -146,7 +150,7 @@ class Grid:
             self.width = int(file.readline().rstrip())
             self.height = int(file.readline().rstrip())
 
-            #Read each row of the grid
+            # Read each row of the grid
             for j in range(self.height):
                 line = file.readline().rstrip()
                 # Takes the value and index of the value from the line
@@ -155,5 +159,6 @@ class Grid:
                     val = Locations(int(val))
                     self.update_box(i, j, val)
             print("File loaded")
+            return self.width, self.height
         except FileNotFoundError:
             print("File not found")

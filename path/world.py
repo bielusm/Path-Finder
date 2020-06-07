@@ -10,6 +10,7 @@ from path.enums import Locations, FSM
 MAX_SIZE = 720
 MIN_SIZE = 200
 
+
 def calc_scale(width, height):
     '''Calculates the scale given the width and height'''
     min_val = min(width, height)
@@ -22,14 +23,15 @@ def calc_scale(width, height):
 
 class World:
     '''A class representing the current state of the world'''
+
     def __init__(self, width, height):
         self._scale = calc_scale(width, height)
         self.state = State(grid_size=(width, height))
         self._grid = Grid(width, height)
         self._graphics = Graphics(width, height, self._scale)
-        self.manager = UIManager((width*self._scale, height * self._scale), self.state)
+        self.manager = UIManager(
+            (width*self._scale, height * self._scale), self.state)
         self._algs = [BFS(self._grid), DFS(self._grid)]
-
 
 
     def change_size(self):
@@ -41,14 +43,12 @@ class World:
         self.manager.set_resolution((width*self._scale, height * self._scale))
         self._algs = [BFS(self._grid), DFS(self._grid)]
 
-
     def handle_events(self):
         '''Handles windows and pygame events'''
         for event in pygame.event.get():
             e_type = event.type
             if e_type == pygame.QUIT:
                 return False
-
 
             menu_clicked = self.manager.process_events(event)
 

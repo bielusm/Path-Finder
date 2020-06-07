@@ -11,4 +11,5 @@ class State():
             alg=0,
             current_tile=Locations.WALL,
             map=0,
-            grid_size=grid_size)
+            grid_size=grid_size,
+            speed=50)
