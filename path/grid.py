@@ -34,6 +34,12 @@ class Grid:
         '''Gets a grid val at x, y coordinates'''
         return self._grid[x][y].val
 
+    def change_size(self, width, height):
+        '''changes the size of the grid and resets it'''
+        self.width = width
+        self.height = height
+        self.init_grid()
+
     def reset(self):
         '''Resets the grid to initial values, does not reset walls'''
         for i in range(self.width):
@@ -120,45 +126,8 @@ class Grid:
             draw_box(x, y, Locations.ACTIVE, graphics)
             self._grid[x][y].changed = True
 
-    def save_to_file(self, num):
-        '''Saves the current grid to a txt file'''
+    def get_grid(self):
+        '''Returns the grid as a 2d array after cleaning it up'''
         # Resets grid so no tiles are marked as discovered or traced
         self.reset()
-        # Opens correct grid file
-        file = open(f'grid{num}.txt', 'w', buffering=1)
-        # Writes width and height
-        file.write(str(self.width) + '\n')
-        file.write(str(self.height) + '\n')
-        # Writes each tile to grid add a newline per each row
-        for j in range(self.height):
-            for i in range(self.width):
-                file.write(str(self._grid[i][j].val.value))
-            file.write('\n')
-        print(f'File grid{num} written')
-        file.close()
-
-    def load_from_file(self, num):
-        '''
-        Loads current grid from file
-        Returns the width and height of the grid
-        '''
-        try:
-            # Open correct file
-            file = open(f'grid{num}.txt', 'r', buffering=1)
-
-            # rstrip removes the newline character
-            self.width = int(file.readline().rstrip())
-            self.height = int(file.readline().rstrip())
-
-            # Read each row of the grid
-            for j in range(self.height):
-                line = file.readline().rstrip()
-                # Takes the value and index of the value from the line
-                # and sets the grid cell to that value
-                for i, val in enumerate(line):
-                    val = Locations(int(val))
-                    self.update_box(i, j, val)
-            print("File loaded")
-            return self.width, self.height
-        except FileNotFoundError:
-            print("File not found")
+        return self._grid

@@ -34,11 +34,55 @@ class World:
         self._algs = [BFS(self._grid), DFS(self._grid)]
 
 
+    def load_grid_from_file(self, num):
+        '''Loads a grid from a file and sets the grid object to it'''
+        try:
+            # Open correct file
+            file = open(f'grid{num}.txt', 'r', buffering=1)
+
+            # rstrip removes the newline character
+            width = int(file.readline().rstrip())
+            height = int(file.readline().rstrip())
+            self.state.context['grid_size'] = (width, height)
+            self.change_size()
+
+            # Read each row of the grid
+            for j in range(height):
+                curr_line = file.readline().rstrip()
+                # Takes the value and index of the value from the line
+                # and sets the grid cell to that value
+                for i, val in enumerate(curr_line):
+                    val = Locations(int(val))
+                    self._grid.update_box(i, j, val)
+            print("File loaded")
+        except FileNotFoundError:
+            print("File not found")
+
+    def save_grid_to_file(self, num):
+        '''Saves the current grid and its width and height
+            to a txt file named after the given number'''
+        grid = self._grid.get_grid()
+        width = self._grid.width
+        height = self._grid.height
+
+        # Opens correct grid file
+        file = open(f'grid{num}.txt', 'w', buffering=1)
+        # Writes width and height
+        file.write(str(width) + '\n')
+        file.write(str(height) + '\n')
+        # Writes each tile to grid add a newline per each row
+        for j in range(height):
+            for i in range(width):
+                file.write(str(grid[i][j].val.value))
+            file.write('\n')
+        print(f'File grid{num} written')
+        file.close()
+
     def change_size(self):
         '''Reinitializes all objects with new grid size'''
         width, height = self.state.context['grid_size']
         self._scale = calc_scale(width, height)
-        self._grid = Grid(width, height)
+        self._grid.change_size(width, height)
         self._graphics.change_size(width, height, self._scale)
         self.manager.set_resolution((width*self._scale, height * self._scale))
         self._algs = [BFS(self._grid), DFS(self._grid)]
@@ -97,11 +141,11 @@ class World:
             if not self._algs[self.state.context["alg"]].step():
                 self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.SAVE:
-            self._grid.save_to_file(self.state.context["map"])
+            self.save_grid_to_file(self.state.context["map"])
             self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.LOAD:
-            self._grid.load_from_file(self.state.context["map"])
-            self.state.curr = FSM.RESET
+            self.load_grid_from_file(self.state.context["map"])
+            self.state.curr = FSM.WAIT
         elif self.state.curr == FSM.CHANGE_SIZE:
             self.change_size()
             self.state.curr = FSM.WAIT
