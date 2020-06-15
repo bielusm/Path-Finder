@@ -57,6 +57,8 @@ class Grid:
     def init_grid(self):
         '''Initializes an empty grid'''
         self._grid = []
+        self.start = None
+        self.end = None
         for i in range(self.width):
             x = []
             for j in range(self.height):
