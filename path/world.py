@@ -9,7 +9,8 @@ from path.enums import Locations, FSM
 
 MAX_SIZE = 720
 MIN_SIZE = 200
-
+#The longest time in ms that the program should wait to update
+MAX_WAIT = 1000/1000
 
 def calc_scale(width, height):
     '''Calculates the scale given the width and height'''
@@ -23,7 +24,6 @@ def calc_scale(width, height):
 
 class World:
     '''A class representing the current state of the world'''
-
     def __init__(self, width, height):
         self._scale = calc_scale(width, height)
         self.state = State(grid_size=(width, height))
@@ -87,6 +87,18 @@ class World:
         self.manager.set_resolution((width*self._scale, height * self._scale))
         self._algs = [BFS(self._grid), DFS(self._grid)]
 
+    def loop(self):
+        '''The main program loop'''
+        clock = pygame.time.Clock()
+        time_since_last_frame = 0
+        while True:
+            time_delta = clock.tick()/1000.0
+            time_since_last_frame += time_delta
+            if not self.handle_events():
+                break
+            time_since_last_frame = self.update(time_delta, time_since_last_frame)
+            self.draw()
+
     def handle_events(self):
         '''Handles windows and pygame events'''
         for event in pygame.event.get():
@@ -126,9 +138,17 @@ class World:
                                 Locations.EMPTY)
         return True
 
-    def update(self, time_delta):
+    def update(self, time_delta, time_since_last_frame):
         '''Updates the current state of the world'''
         self.manager.update(time_delta)
+        wait_time = MAX_WAIT*(1/self.state.context["speed"])
+        if time_since_last_frame >= wait_time:
+            time_since_last_frame -= wait_time
+            self.update_grid()
+        return time_since_last_frame
+
+    def update_grid(self):
+        '''Updates the main grid in the program'''
         if self.state.curr == FSM.RESET:
             self._grid.reset()
             self._algs[self.state.context["alg"]].reset()
@@ -149,6 +169,7 @@ class World:
         elif self.state.curr == FSM.CHANGE_SIZE:
             self.change_size()
             self.state.curr = FSM.WAIT
+        return self.state.context["speed"]
 
     def draw(self):
         '''Draws everything in the world'''

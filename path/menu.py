@@ -115,7 +115,7 @@ class UIManager:
 
         speed_slider_rect = pygame.Rect(
             (0, grid_button_rect.bottom),
-            (100, 20))
+            (165, 20))
         self.speed_slider = pygame_gui.elements.UIHorizontalSlider(
             relative_rect=speed_slider_rect,
             start_value=50,
